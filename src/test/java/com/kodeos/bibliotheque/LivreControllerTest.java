@@ -1,11 +1,13 @@
 package com.kodeos.bibliotheque;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kodeos.bibliotheque.livre.Livre;
 import com.kodeos.bibliotheque.livre.LivreController;
 import com.kodeos.bibliotheque.livre.LivreService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,7 +24,7 @@ class LivreControllerTest {
     @MockitoBean
     private LivreService livreService;
 
-    @Autowired
+    @Autowired // utilisé pour convertir un objet Java en JSON dans les tests MockMvc
     private ObjectMapper objectMapper;
 
     @Test
@@ -53,5 +55,24 @@ class LivreControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Livre introuvable"));
     }
+
+    @Test // test avec mockMvc
+    void testAjouterLivre() throws Exception {
+        // Given
+        Livre livre = new Livre("1984", "George Orwell");
+        livre.setDisponible(true);
+
+        // When + Then
+        mockMvc.perform(post("/livres")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(livre))) // JSON ici
+                .andExpect(status().isCreated());
+
+        // On vérifie que le service a bien été appelé avec cet objet
+        verify(livreService).ajouterLivre(any(Livre.class));
+    }
+
+
+
 }
 
