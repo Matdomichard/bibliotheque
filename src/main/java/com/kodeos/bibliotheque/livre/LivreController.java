@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.util.Map;
 
 @RestController
 @RequestMapping("/livres")
@@ -26,29 +26,38 @@ public class LivreController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> ajouterLivre(@RequestBody Livre livre){
-        livreService.ajouterLivre(livre);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<Livre> ajouterLivre(@RequestBody Livre livre){
+        Livre saved = livreService.ajouterLivre(livre);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
 
     @PostMapping("/{id}/emprunter")
-    public ResponseEntity<String> emprunterLivre(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> emprunterLivre(@PathVariable Long id) {
         if (livreService.emprunterLivre(id)) {
-            return ResponseEntity.ok("Livre emprunté");
+            // Renvoie {"message": "Livre emprunté"} en JSON
+            return ResponseEntity.ok(Map.of("message", "Livre emprunté"));
         } else if (livreService.livreExiste(id)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Livre déjà emprunté");
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "Livre déjà emprunté"));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Livre introuvable");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Livre introuvable"));
         }
     }
 
+
     @PostMapping("/{id}/retourner")
-    public ResponseEntity<String> retournerLivre(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> retournerLivre(@PathVariable Long id) {
         boolean retourReussi = livreService.retournerLivre(id);
-        return retourReussi
-                ? ResponseEntity.ok("Livre retourné")
-                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Livre introuvable");
+        if (retourReussi) {
+            return ResponseEntity.ok(Map.of("message", "Livre retourné"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Livre introuvable"));
+        }
     }
+
+
 
 }

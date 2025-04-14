@@ -13,8 +13,8 @@ public class LivreService {
         this.livreRepository = livreRepository;
     }
 
-    public void ajouterLivre(Livre livre) {
-        livreRepository.save(livre);
+    public Livre ajouterLivre(Livre livre) {
+        return livreRepository.save(livre);
     }
 
     public boolean emprunterLivre(Long livreId) {
